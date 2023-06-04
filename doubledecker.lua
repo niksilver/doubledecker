@@ -333,6 +333,34 @@ local function grid_redraw()
 end
 
 
+-- Capture an OSC event frm TouchOSC.
+-- Format of the path will be `/doubledecker/row/col/`.
+--
+function osc.event(path, args, from)
+    local row, col = string.match(path, '/doubledecker/(%d+)/(%d+)')
+    print("osc.event.path = " .. path)
+    if row and col then
+        print("osc.event.path.row = " .. row)
+        print("osc.event.path.row = " .. col)
+    end
+    print("osc.event.args = " .. dump(args))
+    print("osc.event.from = " .. dump(from))
+end
+
+function dump(o)
+   if type(o) == 'table' then
+      local s = '{ '
+      for k,v in pairs(o) do
+         if type(k) ~= 'number' then k = '"'..k..'"' end
+         s = s .. '['..k..'] = ' .. dump(v) .. ','
+      end
+      return s .. '} '
+   else
+      return tostring(o)
+   end
+end
+
+
 function init()
     dd:copy_psets()
     nb:init()
