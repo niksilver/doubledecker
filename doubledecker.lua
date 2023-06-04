@@ -334,17 +334,29 @@ end
 
 
 -- Capture an OSC event frm TouchOSC.
--- Format of the path will be `/doubledecker/row/col/`.
+-- Format of the path will be `/doubledecker/page/row/col/layer`.
 --
 function osc.event(path, args, from)
-    local row, col = string.match(path, '/doubledecker/(%d+)/(%d+)')
+    local layer = 1
+    local page, row, col, layer = string.match(path, '/doubledecker/(%d+)/(%d+)/(%d+)/(%d+)')
     print("osc.event.path = " .. path)
-    if row and col then
-        print("osc.event.path.row = " .. row)
-        print("osc.event.path.row = " .. col)
-    end
     print("osc.event.args = " .. dump(args))
     print("osc.event.from = " .. dump(from))
+    if page and row and col and layer then
+        print("osc.event.path.page = " .. page)
+        print("osc.event.path.row = " .. row)
+        print("osc.event.path.row = " .. col)
+        print("osc.event.path.layer = " .. layer)
+        print("osc.event.path.args[1] = " .. tostring(args[1]))
+        local b = bind:get(page, row, col, layer)
+        local val = args[1]
+        if b and val then
+            b:set(val / 128)
+            screen_dirty = true
+            print("osc.event.path: Updated to val = " .. val)
+            print("osc.event.path: descriptor = " .. b.descriptor)
+        end
+    end
 end
 
 function dump(o)

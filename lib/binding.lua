@@ -51,6 +51,7 @@ function Binding:draw(x, y, selected)
 end
 
 function Binding:get(page, row, col, layer)
+    print("Binding:get(" .. page .. ", " .. row .. ", " .. col .. ", " .. layer ..")")
     local index = self:static_index(page, row, col, layer)
     local o = self.bindings[index]
     return o
