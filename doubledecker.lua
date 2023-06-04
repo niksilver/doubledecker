@@ -351,7 +351,7 @@ function osc.event(path, args, from)
         local b = bind:get(page, row, col, layer)
         local val = args[1]
         if b and val then
-            b:set(val / 128)
+            b:set(val)
             screen_dirty = true
             print("osc.event.path: Updated to val = " .. val)
             print("osc.event.path: descriptor = " .. b.descriptor)

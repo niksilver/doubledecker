@@ -74,10 +74,14 @@ function Binding:communicate(normalized)
 end
 
 function Binding:set(normalized)
+    print("Binding:set: Entering")
     if self.param then
+        print("Binding:set: Have self.param")
         if self.param.t == 3 or self.param.t == 5 then
+            print("Binding:set: Have self.param.t = " .. self.param.t)
             self.param:set_raw(normalized)
         elseif self.param.t == 2 then
+            print("Binding:set: Have self.param.t = " .. self.param.t)
             self.param:set(
                 util.clamp(
                     math.floor(self.param.count * normalized) + 1,
