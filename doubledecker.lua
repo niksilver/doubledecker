@@ -19,6 +19,9 @@
 -- Plug that in now.
 -- (will override its config)
 --
+-- There is also a
+-- TouchOSC template.
+--
 -- Or use a grid.:
 
 local dd = require('doubledecker/lib/mod')
@@ -28,6 +31,7 @@ local bind = require('doubledecker/lib/binding')
 local g = grid.connect()
 
 mft = require('doubledecker/lib/mft')
+tosc = require('doubledecker/lib/touchosc')
 
 -- much of this code is copied/adapted from nbin
 
@@ -333,39 +337,6 @@ local function grid_redraw()
 end
 
 
--- Capture an OSC event frm TouchOSC.
--- Format of the path will be `/doubledecker/page/row/col/layer`.
---
-function osc.event(path, args, from)
-    local layer = 1
-    local page, row, col, layer = string.match(path, '/doubledecker/(%d+)/(%d+)/(%d+)/(%d+)')
-    print("osc.event.path = " .. path)
-    if page and row and col and layer then
-        local b = bind:get(page, row, col, layer)
-        local val = args[1]
-        if b and val then
-            b:set(val)
-            screen_dirty = true
-            print("osc.event.path: Updated to val = " .. val)
-            print("osc.event.path: descriptor = " .. b.descriptor)
-        end
-    end
-end
-
-function dump(o)
-   if type(o) == 'table' then
-      local s = '{ '
-      for k,v in pairs(o) do
-         if type(k) ~= 'number' then k = '"'..k..'"' end
-         s = s .. '['..k..'] = ' .. dump(v) .. ','
-      end
-      return s .. '} '
-   else
-      return tostring(o)
-   end
-end
-
-
 function init()
     dd:copy_psets()
     nb:init()
@@ -383,6 +354,10 @@ function init()
         page = p
         screen_dirty = true
         mft_shade_page(p)
+    end
+    tosc:init(bind)
+    osc.event = function(path, args, from)
+        tosc:osc_event(path, args, from)
     end
     osc.send(
         { "localhost", 57120 },
