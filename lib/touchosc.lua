@@ -2,6 +2,9 @@ local TouchOSC = {} function TouchOSC:init(bind)
     -- Capture the binding module
     self.bind = bind
 
+    -- The host and port of the TouchOSC device; only handles one
+    self.dest = {}
+
     self.bind:add_listener(function(page, row, col, layer, normalized)
         print('/' .. page .. '/' .. row .. '/' .. col .. '/' .. layer .. " -> " .. normalized)
     end)
@@ -11,14 +14,23 @@ end
 -- Format of the path will be `/doubledecker/page/row/col/layer`.
 --
 function TouchOSC:osc_event(path, args, from)
-    local page, row, col, layer = string.match(path, '/doubledecker/(%d+)/(%d+)/(%d+)/(%d+)')
     print("\n\nosc.event.path = " .. path)
+    print("\n\nosc.event.args = " .. self.dump(args))
+
+    -- We may have a connection event
+    if string.match(path, '^/doubledecker/connect') then
+        self:connect_event(from)
+        return
+    end
+
+    -- We may have an event from a control
+    local page, row, col, layer = string.match(path, '/doubledecker/(%d+)/(%d+)/(%d+)/(%d+)')
     if page and row and col and layer then
         self:control_event(page, row, col, layer, args, from)
     end
 end
 
--- Respond to a control change from TouchOSC
+-- Handle a control change from TouchOSC
 --
 function TouchOSC:control_event(page, row, col, layer, args, from)
     local val = args[1]
@@ -39,6 +51,21 @@ function TouchOSC:control_event(page, row, col, layer, args, from)
         screen_dirty = true
         print("osc.event.path: Updated to normalized val = " .. normalized)
     end
+end
+
+-- Handle an initial connection from TouchOSC.
+--
+function TouchOSC:connect_event(from)
+    if #self.dest == 2 and from[1] == self.dest[1] and from[2] == self.dest[2] then
+        -- We already have this connection
+    else
+        -- It's a new/replacement connection
+        self.dest = from
+        print("Connection from " .. from[1] .. ":" .. from[2])
+    end
+
+    -- Make sure the button is lit
+    osc.send(from, '/doubledecker/connect', {1.0})
 end
 
 -- Returns an object in its desconstructed string form.
