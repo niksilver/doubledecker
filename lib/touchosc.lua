@@ -1,9 +1,8 @@
-local TouchOSC = {}
-
-function TouchOSC:init(bind)
-    print("TouchOSC:init - self = " .. TouchOSC.dump(self))
-    print("TouchOSC:init - bind = " .. TouchOSC.dump(bind))
+local TouchOSC = {} function TouchOSC:init(bind)
     self.bind = bind
+    self.bind:add_listener(function(page, row, col, layer, normalized)
+        print('/' .. page .. '/' .. row .. '/' .. col .. '/' .. layer .. " -> " .. normalized)
+    end)
 end
 
 -- Capture an OSC event frm TouchOSC.
@@ -12,15 +11,25 @@ end
 function TouchOSC:osc_event(path, args, from)
     local layer = 1
     local page, row, col, layer = string.match(path, '/doubledecker/(%d+)/(%d+)/(%d+)/(%d+)')
-    print("osc.event.path = " .. path)
+    print("\n\nosc.event.path = " .. path)
     if page and row and col and layer then
-        local b = self.bind:get(page, row, col, layer)
         local val = args[1]
-        if b and val then
-            b:set(val)
+        print("osc.event val = " .. tostring(val))
+        local b = self.bind:get(page, row, col, layer)
+        print("osc.event: b = " .. TouchOSC.dump(b))
+        -- print("osc.event: b.param = " .. TouchOSC.dump(b.param))
+        print("            tOPTION = " .. params.tOPTION)
+        if b.param and val then
+            -- See if we can normalize the value from TouchOSC
+            local normalized = val
+            if b.param.t == params.tOPTION then
+                -- An option parameter
+                normalized = val / (b.param.count - 1)
+            end
+
+            b:set(normalized)
             screen_dirty = true
-            print("osc.event.path: Updated to val = " .. val)
-            print("osc.event.path: descriptor = " .. b.descriptor)
+            print("osc.event.path: Updated to normalized val = " .. normalized)
         end
     end
 end
@@ -30,7 +39,7 @@ end
 function TouchOSC.dump(o, lvl)
     if lvl == nil then
         lvl = 1
-    elseif lvl >= 3 then
+    elseif lvl >= 4 then
         return '...'
     end
     if type(o) == 'table' then
@@ -40,7 +49,8 @@ function TouchOSC.dump(o, lvl)
             if type(k) ~= 'number' then k = '"'..k..'"' end
             s = s .. indent .. '['..k..'] = ' .. TouchOSC.dump(v, lvl+1) .. ',\n'
         end
-        return s .. '} '
+        indent = string.rep(' ', (lvl-1)*2)
+        return s .. indent .. '} '
     else
         return tostring(o)
     end
