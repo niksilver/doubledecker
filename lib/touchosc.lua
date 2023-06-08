@@ -14,11 +14,7 @@ function TouchOSC:init(bind)
 
     -- Update TouchOSC when the data changes
     self.bind:add_listener(function(page, row, col, layer, normalized)
-        if self:haveDest() then
-            local addr = '/doubledecker/' .. page .. '/' .. row .. '/' .. col .. '/' .. layer
-            print(normalized .. ' -> ' .. addr)
-            osc.send(self.dest, addr, { normalized })
-        end
+        self:update_one(page, row, col, layer, normalized)
     end)
 end
 
@@ -39,18 +35,43 @@ function TouchOSC:update_all()
         for row = 1, 4 do
             for col = 1, 4 do
                 for layer = 1, 2 do
-                    local addr = '/doubledecker/' .. page .. '/' .. row .. '/' .. col .. '/' .. layer
-                    local b = self.bind:get(page, row, col, layer)
-                    if b then
-                        print('event(): Set ' .. addr .. ' to ' .. b.display_value)
-                        osc.send(self.dest, addr, { b.display_value })
-                    else
-                        print('event(): No value for ' .. addr)
-                    end
+                    self:update_one(page, row, col, layer)
                 end
             end
         end
     end
+end
+
+-- Update one TouchOSC control to be the value in the norns app.
+-- @param normalized    May be nil if we have to fetch it ourselves.
+--
+function TouchOSC:update_one(page, row, col, layer, normalized)
+    if not self:haveDest() then
+        return
+    end
+
+    local addr = '/doubledecker/' .. page .. '/' .. row .. '/' .. col .. '/' .. layer
+    local b = self.bind:get(page, row, col, layer)
+    if not b then
+        print('event(): No value for ' .. addr)
+        return
+    end
+    normalized = normalized or b.display_value
+
+    -- Do a sanity check
+    if normalized ~= b.display_value then
+        print('***********************')
+        print('** Warning: normalized ' .. normalized .. ' ~= b.display_value ' .. b.display_value)
+        print('***********************')
+    end
+
+    local denormalized = b.display_value
+    print('event(): Set ' .. addr .. ' to ' .. denormalized)
+    if b.param.t == params.tOPTION then
+        -- It's a radio selector
+        denormalized = denormalized * (b.param.count - 1)
+    end
+    osc.send(self.dest, addr, { denormalized })
 end
 
 -- Capture an OSC event frm TouchOSC.
