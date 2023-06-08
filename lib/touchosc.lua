@@ -1,3 +1,14 @@
+-- Not to self on control functions.
+--
+-- Radio buttons, t = params.tOPTION
+--   norns: 1 to n
+--   TouchOSC: 0 to n-1
+--
+-- Taper, t = param.tTAPER
+--   norns: m to n
+--   TouchOSC: As we define it.
+--
+
 local TouchOSC = {}
 
 function TouchOSC:init(bind)
