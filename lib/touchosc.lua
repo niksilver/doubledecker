@@ -1,4 +1,6 @@
-local TouchOSC = {} function TouchOSC:init(bind)
+local TouchOSC = {}
+
+function TouchOSC:init(bind)
     -- Capture the binding module
     self.bind = bind
 
@@ -12,12 +14,43 @@ local TouchOSC = {} function TouchOSC:init(bind)
 
     -- Update TouchOSC when the data changes
     self.bind:add_listener(function(page, row, col, layer, normalized)
-        if #self.dest == 2 then
+        if self:haveDest() then
             local addr = '/doubledecker/' .. page .. '/' .. row .. '/' .. col .. '/' .. layer
             print(normalized .. ' -> ' .. addr)
             osc.send(self.dest, addr, { normalized })
         end
     end)
+end
+
+-- Do we have connection to a TouchOSC app?
+--
+function TouchOSC:haveDest()
+    return self.dest and #self.dest == 2
+end
+
+-- Send the whole state of the app to TouchOSC.
+--
+function TouchOSC:update_all()
+    if not self:haveDest() then
+        return
+    end
+
+    for page = 1, 3 do
+        for row = 1, 4 do
+            for col = 1, 4 do
+                for layer = 1, 2 do
+                    local addr = '/doubledecker/' .. page .. '/' .. row .. '/' .. col .. '/' .. layer
+                    local b = self.bind:get(page, row, col, layer)
+                    if b then
+                        print('event(): Set ' .. addr .. ' to ' .. b.display_value)
+                        osc.send(self.dest, addr, { b.display_value })
+                    else
+                        print('event(): No value for ' .. addr)
+                    end
+                end
+            end
+        end
+    end
 end
 
 -- Capture an OSC event frm TouchOSC.
@@ -40,7 +73,8 @@ function TouchOSC:osc_event(path, args, from)
     end
 end
 
--- Handle a control change from TouchOSC
+-- Handle a control change from TouchOSC.
+-- norns' `osc.event` function should point here.
 --
 function TouchOSC:control_event(page, row, col, layer, args, from)
     local val = args[1]
@@ -66,12 +100,13 @@ end
 -- Handle an initial connection from TouchOSC.
 --
 function TouchOSC:connect_event(from)
-    if #self.dest == 2 and from[1] == self.dest[1] and from[2] == self.dest[2] then
+    if self:haveDest() and from[1] == self.dest[1] and from[2] == self.dest[2] then
         -- We already have this connection
     else
         -- It's a new/replacement connection
         self.dest = from
         print("Connection from " .. from[1] .. ":" .. from[2])
+        self:update_all()
     end
 
     -- Make sure the button is lit
