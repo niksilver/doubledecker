@@ -5,8 +5,18 @@ local TouchOSC = {} function TouchOSC:init(bind)
     -- The host and port of the TouchOSC device; only handles one
     self.dest = {}
 
+    -- Debugging
     self.bind:add_listener(function(page, row, col, layer, normalized)
         print('/' .. page .. '/' .. row .. '/' .. col .. '/' .. layer .. " -> " .. normalized)
+    end)
+
+    -- Update TouchOSC when the data changes
+    self.bind:add_listener(function(page, row, col, layer, normalized)
+        if #self.dest == 2 then
+            local addr = '/doubledecker/' .. page .. '/' .. row .. '/' .. col .. '/' .. layer
+            print(normalized .. ' -> ' .. addr)
+            osc.send(self.dest, addr, { normalized })
+        end
     end)
 end
 
