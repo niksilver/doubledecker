@@ -147,10 +147,10 @@ function TouchOSC:connect_event(from)
         -- It's a new/replacement connection
         self.dest = from
         print("Connection from " .. from[1] .. ":" .. from[2])
-        self:update_all()
     end
 
-    -- Make sure the button is lit
+    -- In any refresh TouchOSC and make sure the button is lit.
+    self:update_all()
     osc.send(from, '/doubledecker/connect', {1.0})
 end
 
