@@ -13,9 +13,10 @@
 --   Label is the parameter name. Eg. PWM Freq.
 --   Tag is the parameter location, /page/row/col/layer.
 --
--- TouchOSC colours:
---   - Grey  #FFFFFF
+-- TouchOSC colours (original hardware to RGB):
+--   - White  #FFFFFFFF
 --   - Green  #4DFF55FF
+--   - Black  #7300CBFF
 
 local TouchOSC = {}
 
@@ -123,7 +124,7 @@ function TouchOSC:control_event(page, row, col, layer, args, from)
     print("osc.event: b = " .. TouchOSC.dump(b))
     -- print("osc.event: b.param = " .. TouchOSC.dump(b.param))
     print("            tOPTION = " .. params.tOPTION)
-    if b.param and val then
+    if b and b.param and val then
         -- See if we can normalize the value from TouchOSC
         local normalized = val
         if b.param.t == params.tOPTION then
