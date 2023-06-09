@@ -8,6 +8,14 @@
 --   norns: m to n
 --   TouchOSC: As we define it.
 --
+-- TouchOSC controls:
+--   Name is the parameter key plus the layer number. Eg layerLfoFreq1.
+--   Label is the parameter name. Eg. PWM Freq.
+--   Tag is the parameter location, /page/row/col/layer.
+--
+-- TouchOSC colours:
+--   - Grey  #FFFFFF
+--   - Green  #4DFF55FF
 
 local TouchOSC = {}
 
