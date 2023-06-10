@@ -16,6 +16,7 @@
 -- TouchOSC colours (original hardware to RGB):
 --   - White  #FFFFFFFF
 --   - Green  #4DFF55FF
+--   - Red    #FF1D1DFF
 --   - Black  #7300CBFF
 
 local TouchOSC = {}
