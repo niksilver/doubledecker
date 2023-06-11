@@ -18,7 +18,7 @@
 --   - Green  #4DFF55FF
 --   - Red    #FF1D1DFF
 --   - Yellow #FFF746FF
---   - Black  #7300CBFF
+--   - Black  #8C00FFFF
 
 local TouchOSC = {}
 
