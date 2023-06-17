@@ -29,10 +29,10 @@ function TouchOSC:init(bind)
     -- The host and port of the TouchOSC device; only handles one
     self.dest = {}
 
-    -- Debugging
+--[[    -- Debugging
     self.bind:add_listener(function(page, row, col, layer, normalized)
         print('/' .. page .. '/' .. row .. '/' .. col .. '/' .. layer .. " -> " .. normalized)
-    end)
+    end)--]]
 
     -- Update TouchOSC when the data changes
     self.bind:add_listener(function(page, row, col, layer, normalized)
@@ -75,7 +75,6 @@ function TouchOSC:update_one(page, row, col, layer, normalized)
     local addr = '/doubledecker/' .. page .. '/' .. row .. '/' .. col .. '/' .. layer
     local b = self.bind:get(page, row, col, layer)
     if not b then
-        print('event(): No value for ' .. addr)
         return
     end
     normalized = normalized or b.display_value
@@ -88,7 +87,6 @@ function TouchOSC:update_one(page, row, col, layer, normalized)
     end
 
     local denormalized = b.display_value
-    print('event(): Set ' .. addr .. ' to ' .. denormalized)
     if b.param.t == params.tOPTION then
         -- It's a radio selector
         denormalized = denormalized * (b.param.count - 1)
@@ -100,8 +98,6 @@ end
 -- Format of the path will be `/doubledecker/page/row/col/layer`.
 --
 function TouchOSC:osc_event(path, args, from)
-    print("\n\nosc.event.path = " .. path)
-    print("\n\nosc.event.args = " .. self.dump(args))
 
     -- We may have a connection event
     if string.match(path, '^/doubledecker/connect') then
@@ -121,11 +117,8 @@ end
 --
 function TouchOSC:control_event(page, row, col, layer, args, from)
     local val = args[1]
-    print("osc.event val = " .. tostring(val))
     local b = self.bind:get(page, row, col, layer)
-    print("osc.event: b = " .. TouchOSC.dump(b))
-    -- print("osc.event: b.param = " .. TouchOSC.dump(b.param))
-    print("            tOPTION = " .. params.tOPTION)
+
     if b and b.param and val then
         -- See if we can normalize the value from TouchOSC
         local normalized = val
@@ -136,7 +129,6 @@ function TouchOSC:control_event(page, row, col, layer, args, from)
 
         b:set(normalized)
         screen_dirty = true
-        print("osc.event.path: Updated to normalized val = " .. normalized)
     end
 end
 
@@ -148,7 +140,6 @@ function TouchOSC:connect_event(from)
     else
         -- It's a new/replacement connection
         self.dest = from
-        print("Connection from " .. from[1] .. ":" .. from[2])
     end
 
     -- In any refresh TouchOSC and make sure the button is lit.
